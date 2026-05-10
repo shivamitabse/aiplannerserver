@@ -134,12 +134,20 @@ router.get('/report/:id', async (req, res) => {
       return res.status(404).json({ error: 'Report not found' });
     }
 
+    const inputData = JSON.parse(audit.data);
+    const currentMonthlySpend = inputData.tools ? inputData.tools.reduce((acc, t) => acc + (t.monthlySpend || 0), 0) : 0;
+
     res.json({
-      data: JSON.parse(audit.data),
+      auditData: {
+        inputData: inputData,
+        auditResults: {
+          recommendations: JSON.parse(audit.recommendations),
+          totalMonthlySavings: audit.total_monthly_savings,
+          totalAnnualSavings: audit.total_annual_savings,
+          currentMonthlySpend: currentMonthlySpend
+        }
+      },
       summary: audit.summary,
-      recommendations: JSON.parse(audit.recommendations),
-      totalMonthlySavings: audit.total_monthly_savings,
-      totalAnnualSavings: audit.total_annual_savings,
       createdAt: audit.created_at
     });
   } catch (error) {
