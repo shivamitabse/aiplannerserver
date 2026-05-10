@@ -7,17 +7,30 @@ const { getDbConnection } = require("./db");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://www.testmysite.in",
+  "https://testmysite.in",
+];
+
 const corsOptions = {
-  origin:
-    process.env.FRONTEND_URL ||
-    "http://localhost:5173" ||
-    "https://www.testmysite.in",
-  optionsSuccessStatus: 200,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
+  credentials: true,
 };
+
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 app.use(express.json());
 
-// Initialize Database on startup
 getDbConnection()
   .then(() => {
     console.log("Database connected and initialized.");
