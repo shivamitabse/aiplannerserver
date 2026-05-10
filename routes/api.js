@@ -103,8 +103,8 @@ router.post('/lead', async (req, res) => {
         await resend.emails.send({
           from: 'onboarding@resend.dev',
           to: email,
-          subject: 'Your AI Spend Audit Report',
-          html: `<h1>Your AI Spend Audit is ready!</h1>
+          subject: 'Your AI Spendly Report',
+          html: `<h1>Your AI Spendly report is ready!</h1>
                  <p>You can view your full report and recommendations here: <a href="${reportUrl}">${reportUrl}</a></p>
                  <p>Potential Monthly Savings: $${auditData.auditResults.totalMonthlySavings}</p>
                  <p>Potential Annual Savings: $${auditData.auditResults.totalAnnualSavings}</p>`
