@@ -22,6 +22,7 @@ async function getDbConnection() {
           email TEXT,
           company TEXT,
           role TEXT,
+          is_consultation BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         

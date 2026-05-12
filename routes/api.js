@@ -72,15 +72,15 @@ router.post('/summary', async (req, res) => {
 // POST /api/lead
 router.post('/lead', async (req, res) => {
   try {
-    const { email, company, role, auditData, summary } = req.body;
+    const { email, company, role, auditData, summary, isConsultation } = req.body;
 
     const reportId = uuidv4();
     const db = await getDbConnection();
 
     // Save lead
     await db.query(
-      'INSERT INTO leads (report_id, email, company, role) VALUES ($1, $2, $3, $4)',
-      [reportId, email, company, role]
+      'INSERT INTO leads (report_id, email, company, role, is_consultation) VALUES ($1, $2, $3, $4, $5)',
+      [reportId, email, company, role, !!isConsultation]
     );
 
     // Save audit
@@ -103,8 +103,9 @@ router.post('/lead', async (req, res) => {
         await resend.emails.send({
           from: 'onboarding@resend.dev',
           to: email,
-          subject: 'Your AI Spendly Report',
-          html: `<h1>Your AI Spendly report is ready!</h1>
+          subject: isConsultation ? 'Consultation Request & AI Spendly Report' : 'Your AI Spendly Report',
+          html: `<h1>${isConsultation ? 'Consultation Request Received!' : 'Your AI Spendly report is ready!'}</h1>
+                 ${isConsultation ? '<p>We have received your request for a free consultation. Our team will reach out shortly.</p>' : ''}
                  <p>You can view your full report and recommendations here: <a href="${reportUrl}">${reportUrl}</a></p>
                  <p>Potential Monthly Savings: $${auditData.auditResults.totalMonthlySavings}</p>
                  <p>Potential Annual Savings: $${auditData.auditResults.totalAnnualSavings}</p>`
