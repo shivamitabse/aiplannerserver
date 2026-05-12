@@ -6,10 +6,10 @@ async function getDbConnection() {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      // Render requires SSL for external connections, but often internal connections don't.
-      // Usually, deploying on Render with a Render Postgres DB requires ssl: true if connecting from outside,
-      // but ssl: { rejectUnauthorized: false } is a safe default for many cloud providers.
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      // Enable SSL for remote connections (like Render) even in development
+      ssl: process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') && !process.env.DATABASE_URL.includes('127.0.0.1')
+        ? { rejectUnauthorized: false }
+        : false
     });
 
     // Initialize tables

@@ -157,4 +157,62 @@ router.get('/report/:id', async (req, res) => {
   }
 });
 
+// GET /api/share/:id (For social media dynamic OG tags)
+router.get('/share/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = await getDbConnection();
+    
+    const result = await db.query('SELECT * FROM audits WHERE report_id = $1', [id]);
+    const audit = result.rows[0];
+    
+    if (!audit) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/`);
+    }
+
+    const savings = audit.total_annual_savings.toLocaleString();
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const reportUrl = `${frontendUrl}/audit/${id}`;
+    const serverUrl = process.env.SERVER_URL || `${req.protocol}://${req.get('host')}`;
+    const imageUrl = `${serverUrl}/og-image.png`;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${reportUrl}">
+    <meta property="og:title" content="AI Spend Audit: Potential Savings of $${savings}!">
+    <meta property="og:description" content="We analyzed an AI stack and found $${savings}/year in potential savings. Check out the full breakdown on AI Spendly.">
+    <meta property="og:image" content="${imageUrl}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="${reportUrl}">
+    <meta property="twitter:title" content="AI Spend Audit: Potential Savings of $${savings}!">
+    <meta property="twitter:description" content="We analyzed an AI stack and found $${savings}/year in potential savings. Check out the full breakdown on AI Spendly.">
+    <meta property="twitter:image" content="${imageUrl}">
+
+    <title>AI Spendly Report Preview</title>
+    
+    <!-- Redirect to frontend -->
+    <meta http-equiv="refresh" content="0; url=${reportUrl}">
+    <script>window.location.href = "${reportUrl}";</script>
+</head>
+<body>
+    <p>Redirecting you to your AI Spendly report...</p>
+</body>
+</html>`;
+
+    res.send(html);
+  } catch (error) {
+    console.error('Share route error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 module.exports = router;
